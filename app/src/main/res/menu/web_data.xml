@@ -13,8 +13,4 @@
         android:title="@string/menu_refresh"
         android:visible="true"
         app:showAsAction="ifRoom" />
-    <item
-        android:id="@+id/menuAbout"
-        android:title="@string/menu_about"
-        android:visible="true" />
 </menu>

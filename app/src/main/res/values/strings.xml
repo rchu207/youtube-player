@@ -22,4 +22,7 @@
     <string name="menu_cast">CastTo</string>
     <string name="web_player">Web Player</string>
     <string name="youtube_player">YouTube Player</string>
+    <string name="website">Website</string>
+    <string name="youtube_data">YouTube Data</string>
+    <string name="autuor">rchu207@gmail.com</string>
 </resources>
