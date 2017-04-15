@@ -157,7 +157,7 @@ public class YouTubePlayerWrapper implements
     public void onInitializationSuccess(YouTubePlayer.Provider provider, YouTubePlayer player, boolean wasRestored) {
         mPlayer = player;
         if (!wasRestored) {
-            player.setPlayerStyle(YouTubePlayer.PlayerStyle.CHROMELESS);
+            player.setPlayerStyle(YouTubePlayer.PlayerStyle.DEFAULT);
             player.setPlayerStateChangeListener(this);
             player.setPlaybackEventListener(this);
             player.setPlaylistEventListener(this);
