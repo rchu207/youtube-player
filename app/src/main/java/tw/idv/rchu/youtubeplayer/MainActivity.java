@@ -38,10 +38,7 @@ public class MainActivity extends AppCompatActivity
 
         // Launch WebData fragment by default.
         navigationView.setCheckedItem(R.id.nav_web);
-        Fragment fragment = WebDataFragment.newInstance(Uri.parse("https://m.youtube.com"));
-        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-        transaction.replace(R.id.fragment_layout, fragment, WebDataFragment.TAG);
-        transaction.commit();
+        addWebDataFragment();
     }
 
     @Override
@@ -49,6 +46,8 @@ public class MainActivity extends AppCompatActivity
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
+        } else if (getSupportFragmentManager().findFragmentByTag(WebDataFragment.TAG) == null) {
+            addWebDataFragment();
         } else {
             super.onBackPressed();
         }
@@ -70,10 +69,7 @@ public class MainActivity extends AppCompatActivity
         int id = item.getItemId();
 
         if (id == R.id.nav_web) {
-            Fragment fragment = WebDataFragment.newInstance(Uri.parse("https://m.youtube.com"));
-            FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-            transaction.replace(R.id.fragment_layout, fragment, WebDataFragment.TAG);
-            transaction.commit();
+            addWebDataFragment();
         } else if (id == R.id.nav_youtube) {
 
         }
@@ -97,5 +93,12 @@ public class MainActivity extends AppCompatActivity
     @Override
     public void onVideoEnded() {
 
+    }
+
+    private void addWebDataFragment() {
+        Fragment fragment = WebDataFragment.newInstance(Uri.parse("https://m.youtube.com"));
+        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+        transaction.replace(R.id.fragment_layout, fragment, WebDataFragment.TAG);
+        transaction.commit();
     }
 }
