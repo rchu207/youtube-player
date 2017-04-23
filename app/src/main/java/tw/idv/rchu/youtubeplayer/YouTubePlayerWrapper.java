@@ -15,7 +15,8 @@ public class YouTubePlayerWrapper implements
         YouTubePlayer.OnInitializedListener,
         YouTubePlayer.PlayerStateChangeListener,
         YouTubePlayer.PlaybackEventListener,
-        YouTubePlayer.PlaylistEventListener {
+        YouTubePlayer.PlaylistEventListener,
+        SeekBar.OnSeekBarChangeListener {
     static final String TAG = "PlayerWrapper";
 
     public static final int PLAYER_VIEW = 0;
@@ -61,43 +62,38 @@ public class YouTubePlayerWrapper implements
     public void setupUI(View view) {
         // Initialize UI components.
         mPlay = (ImageButton) view.findViewById(R.id.buttonPlay);
-        if (mPlay != null) {
-            mPlay.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    if (mIsPlaying) {
-                        pauseVideo();
-                    } else {
-                        playVideo();
-                    }
+        mPlay.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (mIsPlaying) {
+                    pauseVideo();
+                } else {
+                    playVideo();
                 }
-            });
-        }
+            }
+        });
 
         mPreviousButton = (ImageButton) view.findViewById(R.id.buttonPrevious);
-        if (mPreviousButton != null) {
-            mPreviousButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    previousVideo();
-                }
-            });
-        }
+        mPreviousButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                previousVideo();
+            }
+        });
 
         mNextButton = (ImageButton) view.findViewById(R.id.buttonNext);
-        if (mNextButton != null) {
-            mNextButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    nextVideo();
-                }
-            });
-        }
+        mNextButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                nextVideo();
+            }
+        });
 
         mCurrentTime = (TextView) view.findViewById(R.id.textCurrentTime);
         mCurrentTime.setText(Utils.stringForTime(0));
         mProgress = (SeekBar) view.findViewById(R.id.seekbarTime);
         mProgress.setMax(1000);
+        mProgress.setOnSeekBarChangeListener(this);
         mEndTime = (TextView) view.findViewById(R.id.textDuration);
         mEndTime.setText(Utils.stringForTime(0));
     }
@@ -183,6 +179,24 @@ public class YouTubePlayerWrapper implements
         mStartIndex = playlistIndex;
     }
 
+    public int getCurrentPosition() {
+        int position = 0;
+        if (mPlayer != null) {
+            position = mPlayer.getCurrentTimeMillis();
+        }
+
+        if (mProgress != null) {
+            int duration = getDuration();
+            if (duration > 0) {
+                // use long to avoid overflow
+                long pos = 1000L * position / duration;
+                mProgress.setProgress((int) pos);
+            }
+            mCurrentTime.setText(Utils.stringForTime(position));
+        }
+        return position;
+    }
+
     public int getDuration() {
         if (mPlayer != null) {
             return mPlayer.getDurationMillis();
@@ -218,6 +232,9 @@ public class YouTubePlayerWrapper implements
         if (mPlay != null) {
             mPlay.setImageResource(R.drawable.ic_pause_white);
         }
+        if (mProgress != null) {
+            mProgress.setEnabled(true);
+        }
     }
 
     @Override
@@ -226,6 +243,9 @@ public class YouTubePlayerWrapper implements
         if (mPlay != null) {
             mPlay.setImageResource(R.drawable.ic_play_arrow_white);
         }
+        if (mProgress != null) {
+            mProgress.setEnabled(false);
+        }
     }
 
     @Override
@@ -233,6 +253,9 @@ public class YouTubePlayerWrapper implements
         mIsPlaying = false;
         if (mPlay != null) {
             mPlay.setImageResource(R.drawable.ic_play_arrow_white);
+        }
+        if (mProgress != null) {
+            mProgress.setEnabled(false);
         }
     }
 
@@ -301,5 +324,21 @@ public class YouTubePlayerWrapper implements
     @Override
     public void onPlaylistEnded() {
 
+    }
+
+    @Override
+    public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+
+    }
+
+    @Override
+    public void onStartTrackingTouch(SeekBar seekBar) {
+
+    }
+
+    @Override
+    public void onStopTrackingTouch(SeekBar seekBar) {
+        int duration = getDuration();
+        mPlayer.seekToMillis(seekBar.getProgress() * duration / 1000);
     }
 }
