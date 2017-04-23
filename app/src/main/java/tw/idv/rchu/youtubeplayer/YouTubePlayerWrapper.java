@@ -3,6 +3,7 @@ package tw.idv.rchu.youtubeplayer;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.View;
+import android.widget.ImageButton;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
@@ -23,13 +24,15 @@ public class YouTubePlayerWrapper implements
     private final int mMode;
     private YouTubePlayer mPlayer;
 
+    private boolean mIsPlaying = false;
     private String mVideoId = "";
     private String mPlaylistId = "";
     private int mStartTime = 0;
     private int mStartIndex = 0;
 
-    private TextView mVideoName;
-    private View mVideoTimeLayout;
+    private ImageButton mPlay;
+    private ImageButton mPreviousButton;
+    private ImageButton mNextButton;
     private TextView mCurrentTime;
     private SeekBar mProgress;
     private TextView mEndTime;
@@ -37,7 +40,9 @@ public class YouTubePlayerWrapper implements
     public YouTubePlayerWrapper(int mode) {
         mMode = mode;
 
-        mVideoName = null;
+        mPlay = null;
+        mPreviousButton = null;
+        mNextButton = null;
         mProgress = null;
     }
 
@@ -55,8 +60,40 @@ public class YouTubePlayerWrapper implements
 
     public void setupUI(View view) {
         // Initialize UI components.
-        mVideoName = (TextView) view.findViewById(R.id.textVideoName);
-        mVideoTimeLayout = view.findViewById(R.id.videoTimeLayout);
+        mPlay = (ImageButton) view.findViewById(R.id.buttonPlay);
+        if (mPlay != null) {
+            mPlay.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    if (mIsPlaying) {
+                        pauseVideo();
+                    } else {
+                        playVideo();
+                    }
+                }
+            });
+        }
+
+        mPreviousButton = (ImageButton) view.findViewById(R.id.buttonPrevious);
+        if (mPreviousButton != null) {
+            mPreviousButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    previousVideo();
+                }
+            });
+        }
+
+        mNextButton = (ImageButton) view.findViewById(R.id.buttonNext);
+        if (mNextButton != null) {
+            mNextButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    nextVideo();
+                }
+            });
+        }
+
         mCurrentTime = (TextView) view.findViewById(R.id.textCurrentTime);
         mCurrentTime.setText(Utils.stringForTime(0));
         mProgress = (SeekBar) view.findViewById(R.id.seekbarTime);
@@ -177,25 +214,25 @@ public class YouTubePlayerWrapper implements
 
     @Override
     public void onPlaying() {
-        if (mVideoName != null) {
-            mVideoName.setVisibility(View.INVISIBLE);
-            mVideoTimeLayout.setVisibility(View.INVISIBLE);
+        mIsPlaying = true;
+        if (mPlay != null) {
+            mPlay.setImageResource(R.drawable.ic_pause_white);
         }
     }
 
     @Override
     public void onPaused() {
-        if (mVideoName != null) {
-            mVideoName.setVisibility(View.VISIBLE);
-            mVideoTimeLayout.setVisibility(View.VISIBLE);
+        mIsPlaying = false;
+        if (mPlay != null) {
+            mPlay.setImageResource(R.drawable.ic_play_arrow_white);
         }
     }
 
     @Override
     public void onStopped() {
-        if (mVideoName != null) {
-            mVideoName.setVisibility(View.VISIBLE);
-            mVideoTimeLayout.setVisibility(View.VISIBLE);
+        mIsPlaying = false;
+        if (mPlay != null) {
+            mPlay.setImageResource(R.drawable.ic_play_arrow_white);
         }
     }
 
@@ -239,9 +276,6 @@ public class YouTubePlayerWrapper implements
     public void onVideoEnded() {
         Log.d(TAG, "onVideoEnded");
 
-        if (mVideoName != null) {
-            mVideoName.setText("");
-        }
         if (mProgress != null) {
             mCurrentTime.setText(Utils.stringForTime(getDuration()));
             mProgress.setProgress(1000);

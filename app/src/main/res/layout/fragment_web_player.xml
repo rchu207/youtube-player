@@ -1,38 +1,59 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context="tw.idv.rchu.youtubeplayer.WebPlayerFragment">
 
     <tw.idv.rchu.youtubeplayer.YouTubeWebView
+        android:id="@+id/youtubeView"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:id="@+id/youtubeView" />
+        android:layout_height="match_parent" />
 
-    <TextView
-        android:id="@+id/textVideoName"
+    <LinearLayout
+        android:id="@+id/bottonLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_above="@+id/videoTimeLayout"
         android:layout_marginLeft="15dp"
         android:layout_marginRight="15dp"
-        android:textSize="20sp"
-        android:background="#e0424242" />
+        android:background="#e0424242"
+        android:orientation="horizontal">
+
+        <ImageButton
+            android:id="@+id/buttonPrevious"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:srcCompat="@drawable/ic_skip_previous_white" />
+
+        <ImageButton
+            android:id="@+id/buttonPlay"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:srcCompat="@drawable/ic_play_arrow_white" />
+
+        <ImageButton
+            android:id="@+id/buttonNext"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:srcCompat="@drawable/ic_skip_next_white" />
+
+    </LinearLayout>
 
     <LinearLayout
         android:id="@+id/videoTimeLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
         android:layout_gravity="bottom"
-        android:background="#e0424242"
         android:layout_marginBottom="15dp"
         android:layout_marginLeft="15dp"
         android:layout_marginRight="15dp"
+        android:background="#e0424242"
         android:orientation="horizontal"
-        android:layout_alignParentBottom="true"
-        android:paddingTop="4dp"
-        android:paddingBottom="4dp">
+        android:paddingBottom="4dp"
+        android:paddingTop="4dp">
 
         <TextView
             android:id="@+id/textCurrentTime"
