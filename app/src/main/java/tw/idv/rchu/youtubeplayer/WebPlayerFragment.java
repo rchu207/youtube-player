@@ -2,6 +2,7 @@ package tw.idv.rchu.youtubeplayer;
 
 import android.content.Context;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -19,6 +20,9 @@ import android.view.ViewGroup;
 public class WebPlayerFragment extends Fragment {
     private YouTubePlayerWrapper mWrapper;
     private OnPlayerStateChangeListener mListener;
+
+    private Handler mUiHandler = new Handler();
+    private boolean mIsResume = false;
 
     public WebPlayerFragment() {
         // Required empty public constructor
@@ -62,6 +66,23 @@ public class WebPlayerFragment extends Fragment {
     }
 
     @Override
+    public void onResume() {
+        super.onResume();
+
+        // Update current position immediately.
+        mIsResume = true;
+        mUiHandler.postDelayed(mVideoTimeRefresher, 10);
+    }
+
+    @Override
+    public void onPause() {
+        mIsResume = false;
+        mUiHandler.removeCallbacks(mVideoTimeRefresher);
+
+        super.onPause();
+    }
+
+    @Override
     public void onDetach() {
         super.onDetach();
         mListener = null;
@@ -70,6 +91,26 @@ public class WebPlayerFragment extends Fragment {
     public void initialize(YouTubePlayerWrapper wrapper) {
         mWrapper = wrapper;
     }
+
+    /**
+     * ProgressRefresher
+     */
+    class ProgressRefresher implements Runnable {
+        public void run() {
+            if (!mIsResume) {
+                return;
+            } else if (mWrapper != null) {
+                mWrapper.getCurrentPosition();
+            }
+
+            mUiHandler.removeCallbacks(mVideoTimeRefresher);
+            // Because the position is only updated every 1 second when use YouTubePlayerView,
+            // using 1000ms is enough.
+            mUiHandler.postDelayed(mVideoTimeRefresher, 1000);
+        }
+    }
+
+    ProgressRefresher mVideoTimeRefresher = new ProgressRefresher();
 
     /**
      * This interface must be implemented by activities that contain this

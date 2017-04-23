@@ -89,8 +89,16 @@ public class YouTubeWebPlayer implements YouTubePlayer {
                         @Override
                         public void onReceiveValue(String s) {
                             int index = s.indexOf('.');
-                            setDuration(Integer.parseInt(s.substring(0, index))
+                            setDuration(Integer.parseInt(s.substring(0, index)) * 1000
                                     + Integer.parseInt(s.substring(index+1)));
+                            mUiHandler.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    if (mPlayerStateChangeListener != null) {
+                                        mPlayerStateChangeListener.onVideoStarted();
+                                    }
+                                }
+                            });
                         }
                     });
 

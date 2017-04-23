@@ -3,6 +3,7 @@ package tw.idv.rchu.youtubeplayer;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.View;
+import android.widget.ImageButton;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
@@ -14,7 +15,8 @@ public class YouTubePlayerWrapper implements
         YouTubePlayer.OnInitializedListener,
         YouTubePlayer.PlayerStateChangeListener,
         YouTubePlayer.PlaybackEventListener,
-        YouTubePlayer.PlaylistEventListener {
+        YouTubePlayer.PlaylistEventListener,
+        SeekBar.OnSeekBarChangeListener {
     static final String TAG = "PlayerWrapper";
 
     public static final int PLAYER_VIEW = 0;
@@ -23,13 +25,15 @@ public class YouTubePlayerWrapper implements
     private final int mMode;
     private YouTubePlayer mPlayer;
 
+    private boolean mIsPlaying = false;
     private String mVideoId = "";
     private String mPlaylistId = "";
     private int mStartTime = 0;
     private int mStartIndex = 0;
 
-    private TextView mVideoName;
-    private View mVideoTimeLayout;
+    private ImageButton mPlay;
+    private ImageButton mPreviousButton;
+    private ImageButton mNextButton;
     private TextView mCurrentTime;
     private SeekBar mProgress;
     private TextView mEndTime;
@@ -37,7 +41,9 @@ public class YouTubePlayerWrapper implements
     public YouTubePlayerWrapper(int mode) {
         mMode = mode;
 
-        mVideoName = null;
+        mPlay = null;
+        mPreviousButton = null;
+        mNextButton = null;
         mProgress = null;
     }
 
@@ -55,12 +61,39 @@ public class YouTubePlayerWrapper implements
 
     public void setupUI(View view) {
         // Initialize UI components.
-        mVideoName = (TextView) view.findViewById(R.id.textVideoName);
-        mVideoTimeLayout = view.findViewById(R.id.videoTimeLayout);
+        mPlay = (ImageButton) view.findViewById(R.id.buttonPlay);
+        mPlay.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (mIsPlaying) {
+                    pauseVideo();
+                } else {
+                    playVideo();
+                }
+            }
+        });
+
+        mPreviousButton = (ImageButton) view.findViewById(R.id.buttonPrevious);
+        mPreviousButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                previousVideo();
+            }
+        });
+
+        mNextButton = (ImageButton) view.findViewById(R.id.buttonNext);
+        mNextButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                nextVideo();
+            }
+        });
+
         mCurrentTime = (TextView) view.findViewById(R.id.textCurrentTime);
         mCurrentTime.setText(Utils.stringForTime(0));
         mProgress = (SeekBar) view.findViewById(R.id.seekbarTime);
         mProgress.setMax(1000);
+        mProgress.setOnSeekBarChangeListener(this);
         mEndTime = (TextView) view.findViewById(R.id.textDuration);
         mEndTime.setText(Utils.stringForTime(0));
     }
@@ -146,6 +179,24 @@ public class YouTubePlayerWrapper implements
         mStartIndex = playlistIndex;
     }
 
+    public int getCurrentPosition() {
+        int position = 0;
+        if (mPlayer != null) {
+            position = mPlayer.getCurrentTimeMillis();
+        }
+
+        if (mProgress != null) {
+            int duration = getDuration();
+            if (duration > 0) {
+                // use long to avoid overflow
+                long pos = 1000L * position / duration;
+                mProgress.setProgress((int) pos);
+            }
+            mCurrentTime.setText(Utils.stringForTime(position));
+        }
+        return position;
+    }
+
     public int getDuration() {
         if (mPlayer != null) {
             return mPlayer.getDurationMillis();
@@ -157,7 +208,7 @@ public class YouTubePlayerWrapper implements
     public void onInitializationSuccess(YouTubePlayer.Provider provider, YouTubePlayer player, boolean wasRestored) {
         mPlayer = player;
         if (!wasRestored) {
-            player.setPlayerStyle(YouTubePlayer.PlayerStyle.CHROMELESS);
+            player.setPlayerStyle(YouTubePlayer.PlayerStyle.DEFAULT);
             player.setPlayerStateChangeListener(this);
             player.setPlaybackEventListener(this);
             player.setPlaylistEventListener(this);
@@ -177,25 +228,34 @@ public class YouTubePlayerWrapper implements
 
     @Override
     public void onPlaying() {
-        if (mVideoName != null) {
-            mVideoName.setVisibility(View.INVISIBLE);
-            mVideoTimeLayout.setVisibility(View.INVISIBLE);
+        mIsPlaying = true;
+        if (mPlay != null) {
+            mPlay.setImageResource(R.drawable.ic_pause_white);
+        }
+        if (mProgress != null) {
+            mProgress.setEnabled(true);
         }
     }
 
     @Override
     public void onPaused() {
-        if (mVideoName != null) {
-            mVideoName.setVisibility(View.VISIBLE);
-            mVideoTimeLayout.setVisibility(View.VISIBLE);
+        mIsPlaying = false;
+        if (mPlay != null) {
+            mPlay.setImageResource(R.drawable.ic_play_arrow_white);
+        }
+        if (mProgress != null) {
+            mProgress.setEnabled(false);
         }
     }
 
     @Override
     public void onStopped() {
-        if (mVideoName != null) {
-            mVideoName.setVisibility(View.VISIBLE);
-            mVideoTimeLayout.setVisibility(View.VISIBLE);
+        mIsPlaying = false;
+        if (mPlay != null) {
+            mPlay.setImageResource(R.drawable.ic_play_arrow_white);
+        }
+        if (mProgress != null) {
+            mProgress.setEnabled(false);
         }
     }
 
@@ -239,9 +299,6 @@ public class YouTubePlayerWrapper implements
     public void onVideoEnded() {
         Log.d(TAG, "onVideoEnded");
 
-        if (mVideoName != null) {
-            mVideoName.setText("");
-        }
         if (mProgress != null) {
             mCurrentTime.setText(Utils.stringForTime(getDuration()));
             mProgress.setProgress(1000);
@@ -267,5 +324,21 @@ public class YouTubePlayerWrapper implements
     @Override
     public void onPlaylistEnded() {
 
+    }
+
+    @Override
+    public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+
+    }
+
+    @Override
+    public void onStartTrackingTouch(SeekBar seekBar) {
+
+    }
+
+    @Override
+    public void onStopTrackingTouch(SeekBar seekBar) {
+        int duration = getDuration();
+        mPlayer.seekToMillis(seekBar.getProgress() * duration / 1000);
     }
 }
