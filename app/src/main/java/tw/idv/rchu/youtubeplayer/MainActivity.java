@@ -13,9 +13,12 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 
+import tw.idv.rchu.youtubeplayer.dummy.DummyContent;
+
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener,
         WebDataFragment.OnLoadYouTubeListener,
+        YouTubeDataFragment.OnListFragmentInteractionListener,
         WebPlayerFragment.OnPlayerStateChangeListener {
 
     private YouTubePlayerWrapper mWrapper;
@@ -71,7 +74,7 @@ public class MainActivity extends AppCompatActivity
         if (id == R.id.nav_web) {
             addWebDataFragment();
         } else if (id == R.id.nav_youtube) {
-
+            addYouTubeDataFragment();
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -100,5 +103,17 @@ public class MainActivity extends AppCompatActivity
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
         transaction.replace(R.id.fragment_layout, fragment, WebDataFragment.TAG);
         transaction.commit();
+    }
+
+    private void addYouTubeDataFragment() {
+        Fragment fragment = YouTubeDataFragment.newInstance(1);
+        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+        transaction.replace(R.id.fragment_layout, fragment, YouTubeDataFragment.TAG);
+        transaction.commit();
+    }
+
+    @Override
+    public void onListFragmentInteraction(DummyContent.DummyItem item) {
+        onCastYouTube(YouTubePlayerWrapper.PLAYER_VIEW, item.id, 0, "", 0);
     }
 }

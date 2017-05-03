@@ -10,6 +10,8 @@ import com.google.api.services.youtube.model.Playlist;
 import com.google.api.services.youtube.model.PlaylistItem;
 import com.google.api.services.youtube.model.PlaylistItemListResponse;
 import com.google.api.services.youtube.model.PlaylistListResponse;
+import com.google.api.services.youtube.model.SearchListResponse;
+import com.google.api.services.youtube.model.SearchResult;
 import com.google.api.services.youtube.model.Video;
 import com.google.api.services.youtube.model.VideoListResponse;
 import com.google.api.services.youtube.model.VideoSnippet;
@@ -114,5 +116,19 @@ public class YouTubeDataWrapper {
         }
 
         return response.getNextPageToken();
+    }
+
+    public List<SearchResult> search(String keyword) throws IOException {
+        YouTube.Search.List search = mYoutube.search().list("id,snippet");
+        search.setKey(Auth.BROSWER_KEY);
+        search.setQ(keyword);
+        search.setType("video");
+
+        search.setFields("items(id/kind,id/videoId,snippet/title,snippet/thumbnails/default/url)");
+        search.setMaxResults((long) MAX_RESULT_COUNT);
+
+        // Call the API and print results.
+        SearchListResponse response = search.execute();
+        return response.getItems();
     }
 }
